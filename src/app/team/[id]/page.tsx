@@ -19,7 +19,7 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
 
   for (const group of standingsData.standings) {
     if (group.type === 'TOTAL' && group.table) {
-      const found = group.table.find(r => r.team.tla === teamIdStr || r.team.id.toString() === teamIdStr);
+      const found = group.table.find(r => r.team.tla === id.toUpperCase() || r.team.id.toString() === id);
       if (found) {
         teamInfo = found;
         groupName = group.group.replace('Group ', 'Grupo ');
