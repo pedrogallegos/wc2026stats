@@ -27,12 +27,19 @@ export function getQualifiedTeams(standings: GroupStanding[]) {
   return { firstPlaces, secondPlaces, thirdPlaces };
 }
 
-// Sort the 3rd place teams to find the best 8
 export function getBestThirdPlaceTeams(thirdPlaces: TableRow[]): { qualified: TableRow[], eliminated: TableRow[] } {
   const sorted = [...thirdPlaces].sort((a, b) => {
-    if (a.points !== b.points) return b.points - a.points;
-    if (a.goalDifference !== b.goalDifference) return b.goalDifference - a.goalDifference;
-    return b.goalsFor - a.goalsFor;
+    const ptsA = Number(a.points) || 0;
+    const ptsB = Number(b.points) || 0;
+    if (ptsA !== ptsB) return ptsB - ptsA;
+    
+    const gdA = Number(a.goalDifference) || 0;
+    const gdB = Number(b.goalDifference) || 0;
+    if (gdA !== gdB) return gdB - gdA;
+    
+    const gfA = Number(a.goalsFor) || 0;
+    const gfB = Number(b.goalsFor) || 0;
+    return gfB - gfA;
   });
 
   return {

@@ -3,17 +3,35 @@ import { GroupStanding, Match, TableRow } from '@/types';
 export function applyLiveMatches(standings: GroupStanding[], matches: Match[]): GroupStanding[] {
   const now = new Date();
 
-  // Find all matches that are currently "Live" and not yet finished (so not in official standings)
+  // Find all matches that are currently on the screen in LiveScoring
+  const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const fourHoursFromNow = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+
   const liveMatches = matches.filter(match => {
-    const matchDate = match.utcDate ? new Date(match.utcDate) : null;
-    const isLive = match.status === 'IN_PLAY' || 
-                   match.status === 'PAUSED' || 
-                   ((match.status === 'TIMED' || match.status === 'SCHEDULED') && matchDate && matchDate <= now);
+    // 1. Always include strictly LIVE matches
+    if (match.status === 'IN_PLAY' || match.status === 'PAUSED') return true;
     
-    // Also include FINISHED matches if they happened in the last 4 hours (fallback for mock APIs that don't update standings)
-    const recentlyFinished = match.status === 'FINISHED' && matchDate && (now.getTime() - matchDate.getTime()) < 4 * 60 * 60 * 1000;
-                   
-    return isLive || recentlyFinished;
+    // 2. Filter matches that are currently on the screen
+    if (!match.utcDate) return false;
+    const matchDate = new Date(match.utcDate);
+    const isOnScreen = matchDate >= threeHoursAgo && matchDate <= fourHoursFromNow;
+    
+    if (!isOnScreen) return false;
+
+    // 3. Include if it has a score but the status is weird or FINISHED (mock APIs)
+    const hasScore = match.score?.fullTime?.home != null && match.score?.fullTime?.away != null;
+    if (hasScore) {
+      // ONLY include if we suspect it's a live match that the mock API mislabeled, 
+      // or a recently finished match. We will apply it just to be safe.
+      return true;
+    }
+    
+    // 4. Include scheduled matches if they are past their start time
+    if ((match.status === 'TIMED' || match.status === 'SCHEDULED') && matchDate <= now) {
+      return true;
+    }
+
+    return false;
   });
 
   if (liveMatches.length === 0) return standings;
@@ -33,6 +51,14 @@ export function applyLiveMatches(standings: GroupStanding[], matches: Match[]): 
       const awayRow = group.table.find(row => row.team.id === match.awayTeam.id);
 
       if (homeRow && awayRow) {
+        // PREVENT DOUBLE COUNTING:
+        // A team cannot play more than 3 games in the group stage.
+        // If the API already counted 3 games, adding another match's stats is mathematically invalid (e.g. 10 points).
+        // Only apply stats if it's strictly a live match OR they haven't finished their 3 games.
+        if (match.status !== 'IN_PLAY' && match.status !== 'PAUSED' && (homeRow.playedGames >= 3 || awayRow.playedGames >= 3)) {
+          return;
+        }
+
         // Apply goals
         homeRow.goalsFor += homeGoals;
         homeRow.goalsAgainst += awayGoals;
@@ -58,10 +84,6 @@ export function applyLiveMatches(standings: GroupStanding[], matches: Match[]): 
           awayRow.points += 1;
         }
 
-        // We do NOT increment playedGames to avoid messing up external UI logic, 
-        // or we could increment it. Let's increment it so the user sees P: 3.
-        // Actually, if the base API already had P: 3 but didn't update points, incrementing makes it P: 4.
-        // Let's only increment if it's strictly < 3.
         if (homeRow.playedGames < 3) homeRow.playedGames += 1;
         if (awayRow.playedGames < 3) awayRow.playedGames += 1;
       }

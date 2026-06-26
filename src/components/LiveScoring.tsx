@@ -16,6 +16,13 @@ export default function LiveScoring({ matches }: Props) {
   
   useEffect(() => {
     setMounted(true);
+    
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 60000);
+    
+    return () => clearInterval(interval);
   }, [router]);
 
   if (!matches || matches.length === 0) return null;
@@ -47,10 +54,10 @@ export default function LiveScoring({ matches }: Props) {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 pt-6 pb-2 animate-in fade-in duration-700">
-      <div className="glass rounded-2xl p-4 flex flex-col items-center md:items-start gap-4 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+      <div className="glass rounded-2xl p-4 flex flex-col items-center gap-4 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
         
         {/* Header Badge */}
-        <div className={`flex items-center self-center md:self-start gap-2 px-5 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-inner ${hasLive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-sky-500/20 text-sky-400 border border-sky-500/30'}`}>
+        <div className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-inner ${hasLive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-sky-500/20 text-sky-400 border border-sky-500/30'}`}>
           {hasLive && (
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -61,14 +68,14 @@ export default function LiveScoring({ matches }: Props) {
         </div>
         
         {/* Match Grid */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="w-full flex flex-wrap justify-center gap-4">
           {displayMatches.map((match) => {
             const matchDate = match.utcDate ? new Date(match.utcDate) : null;
             const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED' || ((match.status === 'TIMED' || match.status === 'SCHEDULED') && matchDate && matchDate <= now);
             const isUpcoming = (match.status === 'TIMED' || match.status === 'SCHEDULED') && matchDate && matchDate > now;
             
             return (
-              <div key={match.id} className="flex justify-between items-center gap-3 bg-slate-900/60 hover:bg-slate-800/80 transition-colors px-4 py-3 rounded-xl border border-white/5 shadow-sm cursor-default">
+              <div key={match.id} className="w-full sm:w-auto min-w-[320px] flex justify-between items-center gap-3 bg-slate-900/60 hover:bg-slate-800/80 transition-colors px-4 py-3 rounded-xl border border-white/5 shadow-sm cursor-default">
                 
                 <div className="flex items-center gap-2 flex-1 justify-end">
                   <span className="font-bold text-slate-200 text-sm md:text-base">{tTeam(match.homeTeam?.tla || match.homeTeam?.name)}</span>
