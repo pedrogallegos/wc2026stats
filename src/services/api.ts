@@ -15,8 +15,8 @@ export async function fetchStandings(): Promise<FootballDataResponse | null> {
       headers: {
         'X-Auth-Token': API_KEY,
       },
-      // Cache for 15 seconds to avoid rate limiting across multiple endpoints
-      next: { revalidate: 15 }, 
+      // Cache for 60 seconds to avoid rate limiting across multiple endpoints
+      next: { revalidate: 60 }, 
     });
 
     if (!response.ok) {
@@ -66,8 +66,8 @@ export async function fetchMatches(): Promise<MatchesResponse | null> {
       headers: {
         'X-Auth-Token': API_KEY,
       },
-      // Cache matches for 15 seconds
-      next: { revalidate: 15 },
+      // Cache matches for 60 seconds
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {

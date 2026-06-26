@@ -12,10 +12,10 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Global auto-refresh every 15 seconds to update server data for ALL pages
+    // Global auto-refresh every 60 seconds to update server data for ALL pages without hitting rate limits
     const interval = setInterval(() => {
       router.refresh();
-    }, 15000);
+    }, 60000);
     return () => clearInterval(interval);
   }, [router]);
 
