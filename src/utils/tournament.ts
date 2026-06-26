@@ -67,12 +67,17 @@ export function allocateThirdPlaces(thirdTeams: TableRow[], firstPlaces: Record<
     return assignment;
   }
 
-  // mapping is like: { "A": "C", "B": "D", ... } meaning 1A plays 3C, 1B plays 3D
-  // So assignment['A'] should be the team from group 'C'
+  // mapping is like: { "1A": "3E", "1B": "3J", ... } meaning 1A plays 3E
+  // So assignment['A'] should be the team from group 'E'
   for (const [slot, opponentGroup] of Object.entries(mapping)) {
-    const team = thirdTeams.find(t => t.groupName === opponentGroup);
+    // slot is like "1A", so we extract "A"
+    const leaderGroup = slot.replace('1', '');
+    // opponentGroup is like "3E", so we extract "E"
+    const thirdGroup = opponentGroup.replace('3', '');
+    
+    const team = thirdTeams.find(t => t.groupName === thirdGroup);
     if (team) {
-      assignment[slot] = team;
+      assignment[leaderGroup] = team;
     }
   }
 
