@@ -53,9 +53,9 @@ export function applyLiveMatches(standings: GroupStanding[], matches: Match[]): 
       if (homeRow && awayRow) {
         // PREVENT DOUBLE COUNTING:
         // A team cannot play more than 3 games in the group stage.
-        // If the API already counted 3 games, adding another match's stats is mathematically invalid (e.g. 10 points).
-        // Only apply stats if it's strictly a live match OR they haven't finished their 3 games.
-        if (match.status !== 'IN_PLAY' && match.status !== 'PAUSED' && (homeRow.playedGames >= 3 || awayRow.playedGames >= 3)) {
+        // If the API already counted 3 games, adding another match's stats is mathematically invalid (e.g. 10 or 12 points).
+        // We must NEVER apply stats if they have already finished their 3 games in the official standings.
+        if (homeRow.playedGames >= 3 || awayRow.playedGames >= 3) {
           return;
         }
 
