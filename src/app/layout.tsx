@@ -5,6 +5,7 @@ import Navigation from '@/components/Navigation';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { PredictorProvider } from '@/context/PredictorContext';
 import LiveVisitors from '@/components/LiveVisitors';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
             <Navigation />
             {children}
             <LiveVisitors />
+            <Analytics />
           </PredictorProvider>
         </LanguageProvider>
       </body>
