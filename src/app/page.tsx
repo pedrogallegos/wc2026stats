@@ -1,65 +1,37 @@
-import Image from "next/image";
+import { fetchStandings, fetchMatches } from '@/services/api';
+import StandingsTable from '@/components/StandingsTable';
+import PageHeader from '@/components/PageHeader';
+import LiveScoring from '@/components/LiveScoring';
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+export default async function GroupsPage() {
+  const [data, matchesData] = await Promise.all([
+    fetchStandings(),
+    fetchMatches()
+  ]);
+
+  if (!data || !data.standings) {
+    return (
+      <main className="min-h-[80vh] flex items-center justify-center p-8">
+        <div className="glass p-8 rounded-2xl text-center max-w-md">
+          <h1 className="text-2xl font-bold text-red-400 mb-2">Data Unavailable</h1>
+          <p className="text-slate-400">Could not fetch standings data from football-data.org. Please check your API configuration or try again later.</p>
         </div>
       </main>
-    </div>
+    );
+  }
+
+  return (
+    <main className="p-4 md:p-8 lg:p-12 pb-24 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500">
+      
+      {matchesData?.matches && <LiveScoring matches={matchesData.matches} />}
+      
+      <PageHeader titleKey="groupStage" descKey="groupStageDesc" />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mt-4">
+        {data.standings.filter(g => g.type === 'TOTAL').map((group, index) => (
+          <StandingsTable key={index} groupStanding={group} />
+        ))}
+      </div>
+    </main>
   );
 }
