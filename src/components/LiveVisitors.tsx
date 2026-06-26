@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 
-export default function LiveVisitors() {
+function LiveVisitorsContent() {
   const { language } = useLanguage();
   const searchParams = useSearchParams();
   const isAdmin = searchParams.get('admin') === 'true';
@@ -63,5 +63,13 @@ export default function LiveVisitors() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LiveVisitors() {
+  return (
+    <Suspense fallback={null}>
+      <LiveVisitorsContent />
+    </Suspense>
   );
 }
