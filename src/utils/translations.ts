@@ -57,7 +57,7 @@ export const countryTranslations: Record<string, string> = {
   "Canada": "Canadá",
   "Tunisia": "Túnez",
   "Ghana": "Ghana",
-  "Cameroon": "Camerún",
+
   "Czech Republic": "República Checa",
   "Czechia": "República Checa",
   "Portugal": "Portugal",
