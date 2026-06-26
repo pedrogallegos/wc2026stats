@@ -2,6 +2,7 @@ import { fetchStandings, fetchMatches } from '@/services/api';
 import StandingsTable from '@/components/StandingsTable';
 import PageHeader from '@/components/PageHeader';
 import LiveScoring from '@/components/LiveScoring';
+import { applyLiveMatches } from '@/utils/liveStandings';
 
 export default async function GroupsPage() {
   const [data, matchesData] = await Promise.all([
@@ -20,6 +21,10 @@ export default async function GroupsPage() {
     );
   }
 
+  const liveStandings = matchesData?.matches 
+    ? applyLiveMatches(data.standings, matchesData.matches) 
+    : data.standings;
+
   return (
     <main className="p-4 md:p-8 lg:p-12 pb-24 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500">
       
@@ -28,7 +33,7 @@ export default async function GroupsPage() {
       <PageHeader titleKey="groupStage" descKey="groupStageDesc" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mt-4">
-        {data.standings.filter(g => g.type === 'TOTAL').map((group, index) => (
+        {liveStandings.filter(g => g.type === 'TOTAL').map((group, index) => (
           <StandingsTable key={index} groupStanding={group} />
         ))}
       </div>

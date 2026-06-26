@@ -1,14 +1,22 @@
-import { fetchStandings } from '@/services/api';
+import { fetchStandings, fetchMatches } from '@/services/api';
 import { getQualifiedTeams, getBestThirdPlaceTeams } from '@/utils/tournament';
 import ThirdPlaceTable from '@/components/ThirdPlaceTable';
 import PageHeader from '@/components/PageHeader';
+import { applyLiveMatches } from '@/utils/liveStandings';
 
 export default async function ThirdPlacesPage() {
-  const data = await fetchStandings();
+  const [data, matchesData] = await Promise.all([
+    fetchStandings(),
+    fetchMatches()
+  ]);
 
   if (!data || !data.standings) return null;
 
-  const { thirdPlaces } = getQualifiedTeams(data.standings);
+  const liveStandings = data.standings && matchesData?.matches 
+    ? applyLiveMatches(data.standings, matchesData.matches) 
+    : data.standings;
+
+  const { thirdPlaces } = getQualifiedTeams(liveStandings);
   const { qualified, eliminated } = getBestThirdPlaceTeams(thirdPlaces);
 
   return (

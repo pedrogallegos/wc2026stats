@@ -1,11 +1,15 @@
-import { fetchStandings } from '@/services/api';
+import { fetchStandings, fetchMatches } from '@/services/api';
 import { getRoundOf32Bracket } from '@/utils/tournament';
 import FullBracket from '@/components/FullBracket';
 import PageHeader from '@/components/PageHeader';
 import Disclaimer from '@/components/Disclaimer';
+import { applyLiveMatches } from '@/utils/liveStandings';
 
 export default async function BracketPage() {
-  const data = await fetchStandings();
+  const [data, matchesData] = await Promise.all([
+    fetchStandings(),
+    fetchMatches()
+  ]);
 
   if (!data || !data.standings) {
     return (
@@ -18,8 +22,12 @@ export default async function BracketPage() {
     );
   }
 
+  const liveStandings = data.standings && matchesData?.matches 
+    ? applyLiveMatches(data.standings, matchesData.matches) 
+    : data.standings;
+
   // Get the full 32-team bracket based on regulations
-  const roundOf32Matches = getRoundOf32Bracket(data.standings);
+  const roundOf32Matches = getRoundOf32Bracket(liveStandings);
 
   return (
     <main className="p-4 md:p-8 lg:p-12 pb-24 w-full animate-in fade-in duration-500 overflow-x-hidden">
