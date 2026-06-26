@@ -33,7 +33,7 @@ export default function LiveScoring({ matches }: Props) {
 
   const hasLive = displayMatches.some(m => {
     if (m.status === 'IN_PLAY' || m.status === 'PAUSED') return true;
-    if (m.status === 'TIMED' && m.utcDate && new Date(m.utcDate) <= now) return true;
+    if ((m.status === 'TIMED' || m.status === 'SCHEDULED') && m.utcDate && new Date(m.utcDate) <= now) return true;
     return false;
   });
 
@@ -62,8 +62,8 @@ export default function LiveScoring({ matches }: Props) {
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {displayMatches.map((match) => {
             const matchDate = match.utcDate ? new Date(match.utcDate) : null;
-            const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED' || (match.status === 'TIMED' && matchDate && matchDate <= now);
-            const isUpcoming = match.status === 'TIMED' && matchDate && matchDate > now;
+            const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED' || ((match.status === 'TIMED' || match.status === 'SCHEDULED') && matchDate && matchDate <= now);
+            const isUpcoming = (match.status === 'TIMED' || match.status === 'SCHEDULED') && matchDate && matchDate > now;
             
             return (
               <div key={match.id} className="flex justify-between items-center gap-3 bg-slate-900/60 hover:bg-slate-800/80 transition-colors px-4 py-3 rounded-xl border border-white/5 shadow-sm cursor-default">
