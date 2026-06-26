@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Match } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -11,10 +12,18 @@ interface Props {
 export default function LiveScoring({ matches }: Props) {
   const { t, language, tTeam } = useLanguage();
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
   
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    // Auto-refresh the server component data every 15 seconds to get live scores
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 15000);
+    
+    return () => clearInterval(interval);
+  }, [router]);
 
   if (!matches || matches.length === 0) return null;
 
