@@ -23,8 +23,9 @@ export default function ThirdPlaceTable({ qualified, eliminated }: Props) {
         </p>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
+      <div className="overflow-hidden">
+        {/* Desktop Table */}
+        <table className="hidden md:table w-full text-sm text-left">
           <thead className="text-xs uppercase bg-black/30 text-slate-300">
             <tr>
               <th scope="col" className="px-6 py-4">#</th>
@@ -79,6 +80,68 @@ export default function ThirdPlaceTable({ qualified, eliminated }: Props) {
             })}
           </tbody>
         </table>
+
+        {/* Mobile Cards List */}
+        <div className="md:hidden flex flex-col p-4 gap-4 bg-black/10">
+          {allTeams.map((row, index) => {
+            const isQualified = index < 8;
+            return (
+              <div 
+                key={row.team.id}
+                className={`flex flex-col gap-3 p-4 rounded-xl border ${
+                  isQualified ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${isQualified ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                      {index + 1}
+                    </span>
+                    <div className="w-8 h-8 relative rounded-full overflow-hidden bg-white flex-shrink-0 border border-white/10 shadow-sm flex items-center justify-center">
+                      <img 
+                        src={row.team.crest} 
+                        alt={row.team.name}
+                        className="object-contain w-full h-full p-1"
+                      />
+                    </div>
+                    <span className="font-bold text-lg">{tTeam(row.team.name)}</span>
+                  </div>
+                  
+                  {isQualified ? (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      {language === 'es' ? 'Clasificado' : 'Qualified'}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                      {language === 'es' ? 'Eliminado' : 'Eliminated'}
+                    </span>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-4 gap-2 text-center bg-black/20 p-3 rounded-lg border border-white/5">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Grp</span>
+                    <span className="font-mono mt-1 text-slate-200">{row.groupName?.replace('GROUP_', '') || '-'}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-emerald-400/80 font-bold uppercase">Pts</span>
+                    <span className="font-black mt-1 text-emerald-400 text-lg leading-none">{row.points}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">GD</span>
+                    <span className="font-mono mt-1 text-slate-200">{row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">GF</span>
+                    <span className="font-mono mt-1 text-slate-200">{row.goalsFor}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
