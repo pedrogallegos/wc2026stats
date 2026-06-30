@@ -9,11 +9,12 @@ import H2HTooltip from '@/components/H2HTooltip';
 
 interface Props {
   roundOf32: Match32[];
+  apiMatches?: any[];
 }
 
 type RoundTab = 'R32' | 'R16' | 'QF' | 'SF' | 'F';
 
-export default function FullBracket({ roundOf32 }: Props) {
+export default function FullBracket({ roundOf32, apiMatches = [] }: Props) {
   const { t, language, tTeam } = useLanguage();
   const { isPredictorMode, setIsPredictorMode, bracketPredictions, setBracketPrediction, resetPredictions } = usePredictor();
   const [activeTab, setActiveTab] = useState<RoundTab>('R32');
@@ -30,8 +31,45 @@ export default function FullBracket({ roundOf32 }: Props) {
       if (team1Obj?.team?.id === predictedWinnerId) return team1Obj;
       if (team2Obj?.team?.id === predictedWinnerId) return team2Obj;
     }
-    // 2. We don't have real knockout scores from this API since WC hasn't started,
-    // so we just return TBD if not predicted
+    
+    // 2. Check real API matches if they have played and finished
+    if (team1Obj?.team?.id && team2Obj?.team?.id && apiMatches?.length > 0) {
+      const realMatch = apiMatches.find((m: any) => 
+        m.status === 'FINISHED' &&
+        m.stage !== 'GROUP_STAGE' &&
+        ((m.homeTeam?.id === team1Obj.team.id && m.awayTeam?.id === team2Obj.team.id) ||
+         (m.homeTeam?.id === team2Obj.team.id && m.awayTeam?.id === team1Obj.team.id))
+      );
+      
+      if (realMatch) {
+        if (realMatch.score?.winner === 'HOME_TEAM') {
+           return realMatch.homeTeam?.id === team1Obj.team.id ? team1Obj : team2Obj;
+        }
+        if (realMatch.score?.winner === 'AWAY_TEAM') {
+           return realMatch.awayTeam?.id === team1Obj.team.id ? team1Obj : team2Obj;
+        }
+        // Fallback if API doesn't populate 'winner' correctly but has fullTime
+        const homeGoals = realMatch.score?.fullTime?.home || 0;
+        const awayGoals = realMatch.score?.fullTime?.away || 0;
+        
+        let homeTotal = homeGoals;
+        let awayTotal = awayGoals;
+        
+        // Add penalties if any to break ties (use fraction to not mess up integers)
+        if (realMatch.score?.penalties) {
+           homeTotal += (realMatch.score.penalties.home || 0) * 0.1;
+           awayTotal += (realMatch.score.penalties.away || 0) * 0.1;
+        }
+        
+        if (homeTotal > awayTotal) {
+           return realMatch.homeTeam?.id === team1Obj.team.id ? team1Obj : team2Obj;
+        } else if (awayTotal > homeTotal) {
+           return realMatch.awayTeam?.id === team1Obj.team.id ? team1Obj : team2Obj;
+        }
+      }
+    }
+
+    // 3. Not predicted and no real match found/finished
     return { label: 'TBD' };
   };
 

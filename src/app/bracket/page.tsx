@@ -38,7 +38,7 @@ export default async function BracketPage() {
       <Disclaimer />
 
       <div className="w-full">
-        <FullBracket roundOf32={roundOf32Matches} />
+        <FullBracket roundOf32={roundOf32Matches} apiMatches={matchesData?.matches || []} />
       </div>
     </main>
   );
